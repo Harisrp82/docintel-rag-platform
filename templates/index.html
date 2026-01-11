@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG System - AI-Powered Document Q&A</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/static/android-chrome-512x512.png">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/static/site.webmanifest">
+    
+    <!-- Theme Color for Mobile Browsers -->
+    <meta name="theme-color" content="#1a1a1a">
+    
+    <!-- Mobile Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="RAG System">
+    
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="/static/logo.png" alt="Prism x One Logo" class="logo-image">
+                    </div>
+                    <h1>Prism x One</h1>
+                    <span class="badge">AI-Powered Q&A</span>
+                </div>  
+                
+                <div class="header-actions">
+                    <div class="stats">
+                        <i class="fas fa-database"></i>
+                        <span id="chunk-count">0 chunks</span>
+                    </div>
+                    
+                    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                        <i class="fas fa-sun"></i>
+                    </button>
+                    
+                    <button class="settings-btn" id="settings-btn" aria-label="Settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="container">
+                <!-- Knowledge Panel -->
+                <div class="knowledge-panel">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-book-open"></i> Knowledge Base</h2>
+                        <div class="panel-actions">
+                            <button class="btn btn-outline btn-sm" id="export-btn">Export</button>
+                            <label class="btn btn-outline btn-sm">
+                                Import
+                                <input type="file" id="import-input" accept=".json" style="display: none;">
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-tabs">
+                        <div class="tab-buttons">
+                            <button class="tab-btn active" data-tab="documents">Documents</button>
+                            <button class="tab-btn" data-tab="chat-history">Chat History</button>
+                        </div>
+                        
+                        <div class="tab-content active" id="documents-tab">
+                            <div class="upload-section">
+                                <label class="upload-label">
+                                    <span>Upload .txt / .pdf / .md</span>
+                                    <div class="upload-actions">
+                                        <label class="btn btn-secondary btn-sm">
+                                            <i class="fas fa-upload"></i> Upload
+                                            <input type="file" id="file-upload" accept=".txt,.pdf,.md,.markdown,text/plain" style="display: none;">
+                                        </label>
+                                    </div>
+                                </label>
+                            </div>
+                            
+                            <div class="documents-list" id="documents-list">
+                                <div class="empty-state">No documents yet. Add one to get started.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-content" id="chat-history-tab">
+                            <div class="chat-history-header">
+                                <h3><i class="fas fa-history"></i> Chat Sessions</h3>
+                                <button class="btn btn-outline btn-sm" id="clear-history-btn">
+                                    <i class="fas fa-trash"></i> Clear All
+                                </button>
+                            </div>
+                            
+                            <div class="chat-sessions-list" id="chat-sessions-list">
+                                <div class="empty-state">No chat history yet. Start a conversation to see it here.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Interface -->
+                <div class="chat-interface">
+                    <div class="chat-header">
+                        <h2>Chat</h2>
+                        <p>Ask questions grounded in your knowledge base.</p>
+                    </div>
+                    
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="empty-state">Ask a question to begin. Add your own docs in the Knowledge panel.</div>
+                    </div>
+                    
+                    <div class="chat-input">
+                        <div class="input-group">
+                            <textarea 
+                                id="chat-input" 
+                                placeholder="Ask anything… (e.g., What is this document about?)" 
+                                class="textarea"
+                                rows="3"
+                            ></textarea>
+                            <button class="btn btn-primary" id="send-btn">
+                                <i class="fas fa-paper-plane"></i>
+                                Send
+                            </button>
+                        </div>
+                        <div class="input-hint">Press Ctrl + Enter to send</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+
+        <!-- Citation Drawer -->
+        <div class="citation-drawer" id="citation-drawer">
+            <div class="drawer-overlay" id="drawer-overlay"></div>
+            <div class="drawer-content">
+                <div class="drawer-header">
+                    <div class="drawer-title">
+                        <i class="fas fa-book"></i>
+                        Source Information
+                    </div>
+                    <button class="btn btn-ghost btn-sm" id="close-drawer">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="drawer-info" id="drawer-info"></div>
+                <div class="drawer-content-text" id="drawer-content-text"></div>
+            </div>
+        </div>
+
+
+        <!-- Settings Modal -->
+        <div class="settings-modal" id="settings-modal">
+            <div class="modal-overlay" id="modal-overlay"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Settings</h3>
+                    <button class="btn btn-ghost btn-sm" id="close-settings">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="setting-group">
+                        <label class="setting-label">Retrieval Settings</label>
+                        <div class="setting-grid">
+                            <div class="setting-item">
+                                <label>Max Chunks</label>
+                                <input type="range" id="max-chunks" min="1" max="10" value="5" class="slider">
+                                <span class="setting-value" id="max-chunks-value">5</span>
+                            </div>
+                            <div class="setting-item">
+                                <label>Similarity Threshold</label>
+                                <input type="range" id="similarity-threshold" min="0" max="100" value="50" class="slider">
+                                <span class="setting-value" id="similarity-threshold-value">0.5</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label class="setting-label">Display Options</label>
+                        <div class="setting-item">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="include-metadata" checked>
+                                <span>Include metadata in responses</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Powered by FastAPI + OpenAI. Your documents are processed and stored locally.</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
